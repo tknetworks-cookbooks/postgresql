@@ -83,6 +83,15 @@ suites:
       password:
         postgres: "iloverandompasswordsbutthiswilldo"
 
+- name: server_test
+  run_list:
+  - recipe[postgresql::server_test]
+  - recipe[minitest-handler]
+  attributes:
+    postgresql:
+      password:
+        postgres: "iloverandompasswordsbutthiswilldo"
+
 - name: apt-pgdg-server
   run_list:
   - recipe[minitest-handler]
