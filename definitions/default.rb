@@ -20,6 +20,8 @@ define :createuser,
        :superuser   => false,
        :replication => false,
        :password    => nil do
+  raise 'Please specify a password' unless params[:password]
+
   # issue special sql for replication user
   if params[:replication]
     ruby_block "postgresql-create-role-replication-#{params[:name]}" do
@@ -78,14 +80,12 @@ define :createuser,
   end
 end
 
-define :createdb, :user => nil do
-  params[:user] = params[:name] if params[:user].nil?
-
+define :createdb do
   execute "postgresql-createdb-#{params[:name]}" do
-    user params[:user]
+    user 'postgres'
     command "createdb #{params[:name]}"
     not_if do
-      `su #{params[:user]} -c "echo \\"SELECT count(*) FROM pg_database WHERE datname = '#{params[:name]}';\\" | psql -A -t -U #{params[:user]} postgres"`.strip == "1"
+      `su postgres -c "echo \\"SELECT count(*) FROM pg_database WHERE datname = '#{params[:name]}';\\" | psql -A -t -U postgres postgres"`.strip == "1"
     end
   end
 end
