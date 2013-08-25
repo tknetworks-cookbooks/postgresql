@@ -19,16 +19,20 @@ require File.expand_path('../support/helpers', __FILE__)
 describe 'postgresql::server_test' do
   include Helpers::Postgresql
 
-  %w{pgsql_test_user pgsql_repl_test_user}.each do |u|
-    it "can connect to postgresql with #{u}" do
-      require 'pg'
-      conn = PG::Connection.new(
-                                 :host => '127.0.0.1',
-                                 :user => u,
-                                 :password => 'test',
-                                 :dbname => 'pgsql_test'
-                               )
-      assert_match(/127\.0\.0\.1/, conn.host)
-    end
+  it "can connect to postgresql with pgsql_test_user" do
+    require 'pg'
+    conn = PG::Connection.new(
+                               :host => '127.0.0.1',
+                               :user => 'pgsql_test_user',
+                               :password => 'test',
+                               :dbname => 'pgsql_test'
+                             )
+    assert_match(/127\.0\.0\.1/, conn.host)
+  end
+
+  it "can create basebackup with pgsql_repl_test_user" do
+    repl_dir = '/tmp/pgsql_repl_test_user'
+    assert_sh("PGPASSWORD=test pg_basebackup -D #{repl_dir} -h 127.0.0.1 -U pgsql_repl_test_user")
+    file("#{repl_dir}/backup_label").must_exist
   end
 end
