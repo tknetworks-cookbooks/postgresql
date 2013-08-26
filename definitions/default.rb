@@ -36,9 +36,7 @@ define :createuser,
           sql.close!
         end
       end
-      not_if do
-        `su postgres -c "echo \\"SELECT count(*) FROM pg_roles WHERE rolname = '#{params[:name]}';\\" | psql -A -t -U postgres postgres"`.strip == "1"
-      end
+      not_if "[ `su postgres -c \"echo \\\"SELECT count(*) FROM pg_roles WHERE rolname = '#{params[:name]}';\\\" | psql -A -t -U postgres postgres\"` = '1' ]"
     end
   else
     args = {
@@ -70,9 +68,7 @@ define :createuser,
     execute "postgresql-createuser-#{params[:name]}" do
       user "postgres"
       command "#{cmd} #{params[:name]}"
-      not_if do
-        `su postgres -c "echo \\"SELECT count(*) FROM pg_roles WHERE rolname = '#{params[:name]}';\\" | psql -A -t -U postgres postgres"`.strip == "1"
-      end
+      not_if "[ `su postgres -c \"echo \\\"SELECT count(*) FROM pg_roles WHERE rolname = '#{params[:name]}';\\\" | psql -A -t -U postgres postgres\"` = '1' ]"
       if params[:password]
         notifies :create, "ruby_block[postgresql-alter-role-#{params[:name]}]"
       end
@@ -84,8 +80,6 @@ define :createdb do
   execute "postgresql-createdb-#{params[:name]}" do
     user 'postgres'
     command "createdb #{params[:name]}"
-    not_if do
-      `su postgres -c "echo \\"SELECT count(*) FROM pg_database WHERE datname = '#{params[:name]}';\\" | psql -A -t -U postgres postgres"`.strip == "1"
-    end
+    not_if "[ `su postgres -c \"echo \\\"SELECT count(*) FROM pg_database WHERE datname = '#{params[:name]}';\\\" | psql -A -t -U postgres postgres\"` = '1' ]"
   end
 end
